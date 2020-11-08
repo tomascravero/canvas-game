@@ -10,6 +10,7 @@ var KEY_LEFT = 37,
     KEY_ENTER = 13;
 var dir = 0;
 var pause = true;
+var gameover = true;
 var score = 0;
 
 window.requestAnimationFrame = (function () {
@@ -56,6 +57,16 @@ function random(max) {
     return Math.floor(Math.random() * max);
 }
 
+function reset() {
+    score = 0;
+    dir = 1;
+    player.x = 40;
+    player.y = 40;
+    food.x = random(canvas.width / 10 - 1) * 10;
+    food.y = random(canvas.height / 10 - 1) * 10;
+    gameover = false;
+}
+
 // paint rectangle
 function paint(ctx) {
     // clean canvas
@@ -71,16 +82,21 @@ function paint(ctx) {
     food.fill(ctx);
 
     //draw score
-    ctx.fillText('Score: ' + score, 30, 10);
+    ctx.fillText('Score: ' + score, 0, 10);
 
     // muestro ultima tecla presionada
     ctx.fillStyle = '#fff';
-    ctx.fillText('Last press: ' + lastPress, 40, 20);
+    ctx.fillText('Last press: ' + lastPress, 0, 20);
 
     // draw pause
     if (pause) {
         ctx.textAlign = 'center';
-        ctx.fillText('PAUSE', 150, 75);
+        if (gameover) {
+            ctx.fillText('GAME OVER.', 150, 75);
+        } else {
+            ctx.fillText('PAUSE', 150, 75);
+        }
+        ctx.textAlign = 'left';
     }   
 }
 
@@ -130,6 +146,9 @@ function act() { //movimientos en el juego
             food.x = random(canvas.width / 10 -1) * 10;
             food.y = random(canvas.height / 10 -1) * 10;
         }
+    }
+    if (gameover) {
+        reset();
     }
     if (lastPress == KEY_ENTER) {
         pause = !pause;
