@@ -24,6 +24,11 @@
         iFood = new Image();
     var iEat = new Audio(),
         iDead = new Audio();
+    var currentScene = 0,
+        scenes = [];
+    var mainScene = null,
+        gameScene = null,
+        highScene = null;
 
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -41,6 +46,23 @@
         lastPress = evt.which;
         //console.log(lastPress);
     }, false);
+
+    function Scene() {
+        this.id = scenes.length;
+        scenes.push(this);
+    }
+
+    Scene.prototype = {
+        constructor: Scene,
+        load: function() {},
+        paint: function(ctx) {},
+        act: function() {}
+    };
+
+    function loadScene(scene) {
+        currentScene = scene.id;
+        scenes[currentScene].load();
+    }
 
     function Rectangle(x, y, width, height) {
         this.x = (x == undefined) ? 0 : x;
@@ -106,8 +128,59 @@
         bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) /2;
     }
 
+    function repaint() {
+        window.requestAnimationFrame(repaint);
+        if (scenes.length) {
+            scenes[currentScene].paint(ctx);
+        }
+        // paint(bufferCtx);
+
+        // ctx.fillStyle = '#000';
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // ctx.imageSmoothingEnabled = false;
+        // ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
+    }
+
+    function run() {
+        setTimeout(run, 50);
+        //act();
+        if (scenes.length) {
+            scenes[currentScene].act();
+        }
+    }
+
+    // init function
+    function init() {
+        //get canvas & context
+        canvas = document.getElementById('canvas');
+        ctx = canvas.getContext('2d');
+        // canvas.width = 600;
+        // canvas.height = 300;
+
+        // Load buffer
+        buffer = document.createElement('canvas');
+        bufferCtx = buffer.getContext('2d');
+        buffer.width = 300;
+        buffer.height = 150;
+
+        //create food
+        food = new Rectangle(80, 80, 10, 10);
+
+        // load assets
+        iBody.src = 'assets/body.png';
+        iFood.src = 'assets/fruit.png';
+        iEat.src = 'assets/eat.ogg';
+        iDead.src = 'assets/dead.ogg';
+
+        // start game
+       // resize();
+        run();
+        repaint();
+    }
+
     function reset() {
         gameover = false;
+        pause = false;
         score = 0;
         dir = 1;
         food.x = random(canvas.width / 10 - 1) * 10;
@@ -118,8 +191,45 @@
         body.push(new Rectangle(0, 0, 10, 10));
     }
 
-    // paint rectangle
-    function paint(ctx) {
+    // MAIN SCENE
+    mainScene = new Scene();
+
+    mainScene.paint = function(ctx) {
+        // clean canvas
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, buffer.width, buffer.height);
+        //draw title
+        ctx.fillStyle = '#11D0A8';
+        ctx.textAlign = 'center';
+        ctx.fillText('SNAKE', 150, 60);
+        ctx.fillText('Press Enter', 150, 90);
+    };
+
+    mainScene.act = function() {
+        // Load next scene
+        if (lastPress === KEY_ENTER) {
+            loadScene(gameScene);
+            lastPress = null;
+        }    
+    };
+
+    // GAME SCENE
+    gameScene = new Scene();
+
+    gameScene.load = function() {
+        gameover = false;
+        pause = false;
+        score = 0;
+        dir = 1;
+        food.x = random(canvas.width / 10 - 1) * 10;
+        food.y = random(canvas.height / 10 - 1) * 10;
+        body.length = 0;
+        body.push(new Rectangle(40, 40, 10, 10));
+        body.push(new Rectangle(0, 0, 10, 10));
+        body.push(new Rectangle(0, 0, 10, 10));
+    };
+
+    gameScene.paint = function(ctx) {
         var i = 0,
             l = 0; 
 
@@ -140,7 +250,9 @@
         food.drawImage(ctx, iFood); // food images
 
         //draw score
+        ctx.fillStyle = '#F306F3';
         ctx.fillText('Score: ' + score, 0, 10);
+        ctx.textAlign = 'left';
 
         // muestro ultima tecla presionada
         ctx.fillStyle = '#fff';
@@ -150,15 +262,16 @@
         if (pause) {
             ctx.textAlign = 'center';
             if (gameover) {
+                ctx.fillStyle = '#FF0000';
                 ctx.fillText('GAME OVER.', 150, 75);
             } else {
                 ctx.fillText('PAUSE', 150, 75);
             }
             ctx.textAlign = 'left';
-        }   
+        }
     }
 
-    function act() { //movimientos en el juego
+    gameScene.act = function() {
         var i = 0,
             l = 0;
         if (!pause) {
@@ -240,53 +353,14 @@
         }
     }
 
-    function repaint() {
-        window.requestAnimationFrame(repaint);
-        paint(bufferCtx);
+    // HIGH SCORES SCENE
+    highScene = new Scene();
 
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
-    }
 
-    function run() {
-        setTimeout(run, 50);
-        act();
-    }
-
-    // init function
-    function init() {
-        //get canvas & context
-        canvas = document.getElementById('canvas');
-        ctx = canvas.getContext('2d');
-        // canvas.width = 600;
-        // canvas.height = 300;
-
-        // Load buffer
-        buffer = document.createElement('canvas');
-        bufferCtx = buffer.getContext('2d');
-        buffer.width = 300;
-        buffer.height = 150;
-
-        //create food
-        food = new Rectangle(80, 80, 10, 10);
-
-        // load assets
-        iBody.src = 'assets/body.png';
-        iFood.src = 'assets/fruit.png';
-        iEat.src = 'assets/eat.ogg';
-        iDead.src = 'assets/dead.ogg';
-
-        // start game
-        resize();
-        run();
-        repaint();
-    }
 
     // when page load complete
     window.addEventListener('load', init, false);
-    window.addEventListener('resize', resize, false);
+    //window.addEventListener('resize', resize, false);
 
 }(window));
 
