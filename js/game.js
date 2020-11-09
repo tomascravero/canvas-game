@@ -19,7 +19,7 @@
     var dir = 0;
     var pause = true;
     var gameover = true;
-    var score = 0;
+     var score = 0;
     var iBody = new Image(),
         iFood = new Image();
     var iEat = new Audio(),
@@ -29,6 +29,8 @@
     var mainScene = null,
         gameScene = null,
         highScene = null;
+    var highscores = [],
+        posHighscore = 10;
 
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -102,6 +104,18 @@
         }
     };
 
+    // high scores local storage
+    function addHighscore(score) {
+        posHighscore = 0;
+        while (highscores[posHighscore] > score && posHighscore < highscores.length) {
+            posHighscore += 1;
+        }
+        highscores.splice(posHighscore, 0, score);
+        if (highscores.length > 10) {
+            highscores.length = 10;
+        }
+        localStorage.highscores = highscores.join(',');
+    }
 
     function canPlayOgg() {
         var aud = new Audio();
@@ -172,8 +186,13 @@
         iEat.src = 'assets/eat.ogg';
         iDead.src = 'assets/dead.ogg';
 
+        // Load saved highscores
+        if (localStorage.highscores) {
+            highscores = localStorage.highscores.split(',');
+        }
+
         // start game
-       // resize();
+        // resize();
         run();
         repaint();
     }
@@ -277,7 +296,7 @@
         if (!pause) {
             // game over reset
             if (gameover) {
-                reset();
+                loadScene(highScene);
             }
 
             // change direction rectangle
@@ -320,6 +339,7 @@
                     iDead.play();
                     gameover = true;
                     pause = true;
+                    addHighscore(score);
                 }
             }
 
@@ -356,7 +376,35 @@
     // HIGH SCORES SCENE
     highScene = new Scene();
 
+    highScene.paint = function(ctx) {
+        var i = 0,
+        l = 0;
+        // Clean canvas
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Draw title
+        ctx.fillStyle = '#00FF8B';
+        ctx.textAlign = 'center';
+        ctx.fillText('HIGH SCORES', 150, 30);
+        // Draw high scores
+        ctx.fillStyle = '#00FF8B';
+        ctx.textAlign = 'right';
+        for (i = 0, l = highscores.length; i < l; i += 1) {
+            if (i === posHighscore) {
+                ctx.fillText('*' + highscores[i], 180, 40 + i * 10);
+            } else {
+                ctx.fillText(highscores[i], 180, 40 + i * 10);
+            }
+        }
+    };
 
+    highScene.act = function() {
+        // Load next scene
+        if (lastPress === KEY_ENTER) {
+            loadScene(gameScene);
+            lastPress = null;
+        }
+    };
 
     // when page load complete
     window.addEventListener('load', init, false);
