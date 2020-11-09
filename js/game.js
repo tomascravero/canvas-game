@@ -4,7 +4,8 @@
     var canvas = null, //canvas 
         ctx = null; //contexto 2d
     var body = [],//player = undefined, 
-        food = null;
+        food = null,
+        bonus = null;
     var buffer = null,
         bufferCtx = null,
         bufferScale = null,
@@ -15,7 +16,8 @@
         KEY_UP = 38,
         KEY_RIGHT = 39,
         KEY_DOWN = 40,
-        KEY_ENTER = 13;
+        KEY_ENTER = 13,
+        KEY_SPACE = 32;
     var dir = 0;
     var pause = true;
     var gameover = true;
@@ -24,6 +26,7 @@
         iFood = new Image();
     var iEat = new Audio(),
         iDead = new Audio();
+    var iBonus = new Image();
     var currentScene = 0,
         scenes = [];
     var mainScene = null,
@@ -179,12 +182,15 @@
 
         //create food
         food = new Rectangle(80, 80, 10, 10);
+        bonus = new Rectangle(80, 80, 10, 10);
+        
 
         // load assets
         iBody.src = 'assets/body.png';
         iFood.src = 'assets/fruit.png';
         iEat.src = 'assets/eat.ogg';
         iDead.src = 'assets/dead.ogg';
+        //iBonus.src = 'assets/bonus.png';
 
         // Load saved highscores
         if (localStorage.highscores) {
@@ -220,14 +226,20 @@
         //draw title
         ctx.fillStyle = '#11D0A8';
         ctx.textAlign = 'center';
+        ctx.font = '10px Goldman, cursive';
         ctx.fillText('SNAKE', 150, 60);
-        ctx.fillText('Press Enter', 150, 90);
+        ctx.fillText('Press Enter to play.', 150, 90);
+        ctx.fillText('Press SPACE to view high scores.', 150, 110);
     };
 
     mainScene.act = function() {
         // Load next scene
         if (lastPress === KEY_ENTER) {
             loadScene(gameScene);
+            lastPress = null;
+        }
+        if (lastPress === KEY_SPACE) {
+            loadScene(highScene);
             lastPress = null;
         }    
     };
@@ -246,6 +258,11 @@
         body.push(new Rectangle(40, 40, 10, 10));
         body.push(new Rectangle(0, 0, 10, 10));
         body.push(new Rectangle(0, 0, 10, 10));
+        setInterval(() => {
+            bonus.x = random(canvas.width / 10 - 1) * 10;
+            bonus.y = random(canvas.height / 10 - 1) * 10;
+        }, 5000);
+        
     };
 
     gameScene.paint = function(ctx) {
@@ -263,11 +280,15 @@
             body[i].drawImage(ctx, iBody); // player images
         }
 
-        //draw food
+        //draw food & bonus food
         ctx.fillStyle = '#f00';
         // food.fill(ctx);
         food.drawImage(ctx, iFood); // food images
+        //bonus.drawImage(ctx, iBonus);
+        ctx.fillStyle = '#6f03fc';
+        bonus.fill(ctx);
 
+    
         //draw score
         ctx.fillStyle = '#F306F3';
         ctx.fillText('Score: ' + score, 0, 10);
@@ -298,7 +319,6 @@
             if (gameover) {
                 loadScene(highScene);
             }
-
             // change direction rectangle
             if (lastPress === KEY_UP && dir !== 2) {
                 dir = 0;
@@ -365,6 +385,15 @@
                 food.x = random(buffer.width / 10 -1) * 10;
                 food.y = random(buffer.height / 10 -1) * 10;
             }
+            if (body[0].intersects(bonus)) {
+                iEat.play();
+                score += 5;
+                bonus.x = random(canvas.width / 10 - 1) * 10;
+                bonus.y = random(canvas.height / 10 - 1) * 10;
+                fetch('http://127.0.0.1:5500/index.html?score=${score}', {method: 'GET'})
+                .then(response => console.log('Score sent successfully'))
+                .catch(error => console.log ('Error trying to send the score'))
+            }
         }
         // unpause / pause
         if (lastPress === KEY_ENTER) {
@@ -385,6 +414,7 @@
         // Draw title
         ctx.fillStyle = '#00FF8B';
         ctx.textAlign = 'center';
+        ctx.font = '10px Goldman, cursive';
         ctx.fillText('HIGH SCORES', 150, 30);
         // Draw high scores
         ctx.fillStyle = '#00FF8B';
@@ -396,12 +426,18 @@
                 ctx.fillText(highscores[i], 180, 40 + i * 10);
             }
         }
+        ctx.textAlign = 'left';
+        ctx.fillText('Back to menu. (space)', 0, 140);
     };
 
     highScene.act = function() {
         // Load next scene
         if (lastPress === KEY_ENTER) {
             loadScene(gameScene);
+            lastPress = null;
+        }
+        if (lastPress === KEY_SPACE) {
+            loadScene(mainScene);
             lastPress = null;
         }
     };
