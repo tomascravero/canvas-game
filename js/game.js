@@ -150,12 +150,20 @@
         if (scenes.length) {
             scenes[currentScene].paint(ctx);
         }
-        // paint(bufferCtx);
+        //paint(bufferCtx);
 
         // ctx.fillStyle = '#000';
         // ctx.fillRect(0, 0, canvas.width, canvas.height);
         // ctx.imageSmoothingEnabled = false;
         // ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
+    }
+
+    function upload(score) {
+        fetch('http://127.0.0.1:5500/index.html?score=${score}', {
+            method: 'GET'
+        })
+        .then(succes => console.log('Score sent successfully'))
+        .catch(error => console.log ('Error trying to send the score'))
     }
 
     function run() {
@@ -180,7 +188,7 @@
         buffer.width = 300;
         buffer.height = 150;
 
-        //create food
+        //create food & bonusF
         food = new Rectangle(80, 80, 10, 10);
         bonus = new Rectangle(80, 80, 10, 10);
         
@@ -258,11 +266,8 @@
         body.push(new Rectangle(40, 40, 10, 10));
         body.push(new Rectangle(0, 0, 10, 10));
         body.push(new Rectangle(0, 0, 10, 10));
-        setInterval(() => {
-            bonus.x = random(canvas.width / 10 - 1) * 10;
-            bonus.y = random(canvas.height / 10 - 1) * 10;
-        }, 5000);
-        
+        bonus.x = undefined;
+        bonus.y = undefined;
     };
 
     gameScene.paint = function(ctx) {
@@ -295,8 +300,8 @@
         ctx.textAlign = 'left';
 
         // muestro ultima tecla presionada
-        ctx.fillStyle = '#fff';
-        ctx.fillText('Last press: ' + lastPress, 0, 20);
+        // ctx.fillStyle = '#fff';
+        // ctx.fillText('Last press: ' + lastPress, 0, 20);
 
         // draw pause
         if (pause) {
@@ -384,15 +389,17 @@
                 score += 1;
                 food.x = random(buffer.width / 10 -1) * 10;
                 food.y = random(buffer.height / 10 -1) * 10;
+                if (random(1000) > 700) {
+                    bonus.x = random(canvas.width / 10 - 1) * 10;
+                    bonus.y = random(canvas.height / 10 - 1) * 10;
+                }
             }
             if (body[0].intersects(bonus)) {
                 iEat.play();
                 score += 5;
-                bonus.x = random(canvas.width / 10 - 1) * 10;
-                bonus.y = random(canvas.height / 10 - 1) * 10;
-                fetch('http://127.0.0.1:5500/index.html?score=${score}', {method: 'GET'})
-                .then(response => console.log('Score sent successfully'))
-                .catch(error => console.log ('Error trying to send the score'))
+                bonus.x = 5000;
+                bonus.y = 5000;
+                upload(score);
             }
         }
         // unpause / pause
