@@ -150,12 +150,12 @@
         if (scenes.length) {
             scenes[currentScene].paint(ctx);
         }
-        //paint(bufferCtx);
+        paint(bufferCtx);
 
-        // ctx.fillStyle = '#000';
-        // ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // ctx.imageSmoothingEnabled = false;
-        // ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
     }
 
     function upload(score) {
@@ -206,7 +206,7 @@
         }
 
         // start game
-        // resize();
+        //resize();
         run();
         repaint();
     }
