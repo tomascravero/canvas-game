@@ -150,12 +150,12 @@
         if (scenes.length) {
             scenes[currentScene].paint(ctx);
         }
-        paint(bufferCtx);
+        //paint(bufferCtx);
 
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
+        // ctx.fillStyle = '#000';
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // ctx.imageSmoothingEnabled = false;
+        // ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
     }
 
     function upload(score) {
@@ -198,7 +198,7 @@
         iFood.src = 'assets/fruit.png';
         iEat.src = 'assets/eat.ogg';
         iDead.src = 'assets/dead.ogg';
-        //iBonus.src = 'assets/bonus.png';
+        iBonus.src = 'assets/bonus.png';
 
         // Load saved highscores
         if (localStorage.highscores) {
@@ -206,7 +206,7 @@
         }
 
         // start game
-        //resize();
+        // resize();
         run();
         repaint();
     }
@@ -238,6 +238,9 @@
         ctx.fillText('SNAKE', 150, 60);
         ctx.fillText('Press Enter to play.', 150, 90);
         ctx.fillText('Press SPACE to view high scores.', 150, 110);
+        ctx.textAlign = 'left';
+        ctx.font = '8px arial';
+        ctx.fillText('github.com/tomascravero', 0, 140);
     };
 
     mainScene.act = function() {
@@ -289,13 +292,14 @@
         ctx.fillStyle = '#f00';
         // food.fill(ctx);
         food.drawImage(ctx, iFood); // food images
-        //bonus.drawImage(ctx, iBonus);
-        ctx.fillStyle = '#6f03fc';
-        bonus.fill(ctx);
+        bonus.drawImage(ctx, iBonus);
+        // ctx.fillStyle = '#6f03fc';
+        // bonus.fill(ctx);
 
     
         //draw score
         ctx.fillStyle = '#F306F3';
+        ctx.font = '10px Goldman, cursive';
         ctx.fillText('Score: ' + score, 0, 10);
         ctx.textAlign = 'left';
 
@@ -308,6 +312,7 @@
             ctx.textAlign = 'center';
             if (gameover) {
                 ctx.fillStyle = '#FF0000';
+                ctx.font = '10px Goldman, cursive';
                 ctx.fillText('GAME OVER.', 150, 75);
             } else {
                 ctx.fillText('PAUSE', 150, 75);
