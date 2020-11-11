@@ -159,7 +159,7 @@
     }
 
     function upload(score) {
-        fetch('http://127.0.0.1:5500/index.html?score=${score}', {
+        fetch('www.jsonplaceholder.com?score=${score}', {
             method: 'GET'
         })
         .then(succes => console.log('Score sent successfully'))
