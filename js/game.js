@@ -159,8 +159,9 @@
     }
 
     function upload(score) {
-        fetch('www.jsonplaceholder.com?score=${score}', {
-            method: 'GET'
+        fetch(`https://www.jsonplaceholder.com?score=${score}`, {
+            method: 'GET',
+            mode: 'no-cors'
         })
         .then(succes => console.log('Score sent successfully'))
         .catch(error => console.log ('Error trying to send the score'))
